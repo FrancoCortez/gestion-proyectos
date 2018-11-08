@@ -21,7 +21,7 @@ public class UserRoutes extends BaseRouter {
         return RouterFunctions.nest(path(baseRouterPath),
                 route(POST(""), userService::insert)
                         .andRoute(PUT("/{id}"), userService::update)
-                        .andRoute(DELETE(""), userService::deleteById)
+                        .andRoute(DELETE("/{id}"), userService::deleteById)
                         .andRoute(GET(""), userService::findAll)
                         .andRoute(GET("/{id}/find-by"), userService::findById)
                         .andRoute(DELETE("/{token}/delete-all"), userService::deleteAll)

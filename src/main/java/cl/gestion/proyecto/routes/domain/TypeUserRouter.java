@@ -7,8 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RequestPredicates.path;
+import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 import static org.springframework.web.reactive.function.server.RouterFunctions.nest;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
@@ -19,7 +18,11 @@ public class TypeUserRouter extends BaseRouter {
     @Bean(value = "type-user-router")
     public RouterFunction<ServerResponse> router(TypeUserService typeUserService) {
         return nest(path(baseRouterPath),
-                route(GET(""), typeUserService::insert)
+                route(POST(""), typeUserService::insert)
+                        .andRoute(PUT("/{id}"), typeUserService::update)
+                        .andRoute(GET(""), typeUserService::findAll)
+                        .andRoute(DELETE("/{id}"), typeUserService::deleteById)
+                        .andRoute(GET("/{id}/find-by"), typeUserService::findById)
         );
     }
 }

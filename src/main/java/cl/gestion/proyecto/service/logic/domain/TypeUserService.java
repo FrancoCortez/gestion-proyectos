@@ -9,4 +9,12 @@ import reactor.core.publisher.Mono;
 public interface TypeUserService extends BaseService<TypeUserEntity, String> {
 
     Mono<ServerResponse> insert(ServerRequest request);
+
+    Mono<ServerResponse> update(ServerRequest request);
+
+    Mono<ServerResponse> findAll(ServerRequest request);
+
+    Mono<ServerResponse> deleteById(ServerRequest request);
+
+    Mono<ServerResponse> findById(ServerRequest request);
 }
