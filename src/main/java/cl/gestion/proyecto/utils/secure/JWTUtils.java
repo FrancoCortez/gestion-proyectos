@@ -15,7 +15,7 @@ import java.util.Map;
 public class JWTUtils implements Serializable {
 
     private String secret = "a34jnf04iti9432mngk29rig94kf0";
-    private String expirationTime = "28800000";
+    private String expirationTime = "2880000";
 
 
     Claims getAllClaimsFromToken(String token) {

@@ -6,6 +6,7 @@ import cl.gestion.proyecto.model.utils.ErrorHandlerResponse;
 import cl.gestion.proyecto.model.utils.SuccessHandlerResponse;
 import cl.gestion.proyecto.service.logic.base.BaseService;
 import cl.gestion.proyecto.utils.secure.JWTUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Date;
 
+@Slf4j
 public class BaseServiceImpl<T extends BaseEntity, ID extends String> implements BaseService<T, ID> {
 
     private final JWTUtils jwtUtils;
@@ -77,12 +79,19 @@ public class BaseServiceImpl<T extends BaseEntity, ID extends String> implements
         if (tokenHeader == null) {
             throw new Exception("El token de autorizacion es invalido");
         }
+        if (tokenHeader.startsWith("Bearer ")) {
+            tokenHeader = tokenHeader.substring(7);
+        } else {
+            throw new Exception("Error token invalido para realizar la operacion.");
+        }
+
         String username = jwtUtils.getUsernameFromToken(tokenHeader);
         return Mono.justOrEmpty(username);
     }
 
     protected Mono<AuditingEntity> generateAuditingEntity(AuditingEntity auditingEntity, ServerRequest request) throws Exception {
         if (auditingEntity == null) {
+            log.info("Generate auditing the origin null");
             return Mono.justOrEmpty(AuditingEntity.builder()
                     .createdBy(obtainDataToken(request).toFuture().get())
                     .createdDate(new Date())
@@ -92,6 +101,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID extends String> implements
                     .version(1L)
                     .build());
         } else {
+            log.info("Generate auditing the origin != null");
             auditingEntity.setLastModifiedBy(obtainDataToken(request).toFuture().get());
             auditingEntity.setLastModfiedDate(new Date());
             auditingEntity.setVersion(auditingEntity.getVersion() + 1);

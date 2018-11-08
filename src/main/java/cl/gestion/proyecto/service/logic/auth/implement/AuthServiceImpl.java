@@ -10,6 +10,7 @@ import cl.gestion.proyecto.service.logic.auth.AuthService;
 import cl.gestion.proyecto.service.logic.base.implement.BaseServiceImpl;
 import cl.gestion.proyecto.utils.secure.JWTUtils;
 import cl.gestion.proyecto.utils.secure.PBKDF2Encoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.Date;
 
 @Service
+@Slf4j
 public class AuthServiceImpl extends BaseServiceImpl<UserEntity, String> implements AuthService {
 
     private final UserRepository userRepository;
@@ -34,14 +36,19 @@ public class AuthServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
     }
 
     public Mono<ServerResponse> login(ServerRequest request) {
+        log.info("Init login");
         try {
             return request.bodyToMono(LoginRequest.class).map((result) -> {
                 Mono<ServerResponse> serverResponse = this.userRepository.findByUsername(result.getUsername()).map((find) -> {
+                    log.info("Validate login with password");
                     if (passwordEncoder.encode(result.getPassword()).equals(find.getPassword())) {
+                        log.info("Validation ok");
                         return ServerResponse.ok().header("Authorization", this.jwtUtils.generateToken(find)).build().toFuture().join();
                     }
+                    log.info("Validation error");
                     return ServerResponse.status(403).build().toFuture().join();
                 });
+                log.info("End login");
                 return serverResponse.toFuture().join();
             });
         } catch (Exception ex) {

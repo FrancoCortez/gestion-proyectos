@@ -23,6 +23,6 @@ public class GenericResult {
     }
 
     public Optional<String> getFieldNameIfInvalid(String field) {
-        return this.isValid ? Optional.empty() : Optional.of(field);
+        return this.isValid ? Optional.empty() : Optional.of(field + " " + System.lineSeparator() + " ");
     }
 }

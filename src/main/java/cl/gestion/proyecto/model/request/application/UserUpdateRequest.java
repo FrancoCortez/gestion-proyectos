@@ -14,14 +14,11 @@ import java.util.List;
 @ToString
 @Builder
 @EqualsAndHashCode(callSuper = false)
-public class UserRequest implements Serializable {
+public class UserUpdateRequest implements Serializable {
 
     @NotNull
     @NotBlank
     private String username;
-    @NotNull
-    @NotBlank
-    private String password;
     @NotNull
     @NotBlank
     private String mail;

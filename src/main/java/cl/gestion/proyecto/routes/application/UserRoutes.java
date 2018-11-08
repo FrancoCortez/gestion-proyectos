@@ -20,12 +20,11 @@ public class UserRoutes extends BaseRouter {
     public RouterFunction<ServerResponse> router(UserService userService) {
         return RouterFunctions.nest(path(baseRouterPath),
                 route(POST(""), userService::insert)
-                        .andRoute(PUT(""), userService::update)
+                        .andRoute(PUT("/{id}"), userService::update)
                         .andRoute(DELETE(""), userService::deleteById)
                         .andRoute(GET(""), userService::findAll)
                         .andRoute(GET("/{id}/find-by"), userService::findById)
                         .andRoute(DELETE("/{token}/delete-all"), userService::deleteAll)
         );
     }
-
 }
