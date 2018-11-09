@@ -4,7 +4,6 @@ import cl.gestion.proyecto.model.entities.base.AuditingEntity;
 import cl.gestion.proyecto.model.entities.domain.TypeUserEntity;
 import cl.gestion.proyecto.repository.domain.TypeUserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
@@ -16,7 +15,7 @@ import java.util.Date;
 @EnableReactiveMongoRepositories
 //@EnableMongoAuditing
 @Slf4j
-public class ProyectoApplication implements CommandLineRunner {
+public class ProyectoApplication {
 
     private final TypeUserRepository typeUserRepository;
 

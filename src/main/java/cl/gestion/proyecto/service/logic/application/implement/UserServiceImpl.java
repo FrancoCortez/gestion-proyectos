@@ -3,7 +3,10 @@ package cl.gestion.proyecto.service.logic.application.implement;
 import cl.gestion.proyecto.model.entities.application.UserEntity;
 import cl.gestion.proyecto.model.request.application.UserRequest;
 import cl.gestion.proyecto.model.request.application.UserUpdateRequest;
+import cl.gestion.proyecto.model.response.application.UserFullResponse;
+import cl.gestion.proyecto.model.response.domain.TypeUserFullResponse;
 import cl.gestion.proyecto.repository.application.UserRepository;
+import cl.gestion.proyecto.repository.domain.TypeUserRepository;
 import cl.gestion.proyecto.service.logic.application.UserService;
 import cl.gestion.proyecto.service.logic.base.implement.BaseServiceImpl;
 import cl.gestion.proyecto.service.validator.application.UserValidator;
@@ -14,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -23,12 +27,14 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
     private final UserRepository userRepository;
     private final PBKDF2Encoder pbkdf2Encoder;
     private final UserValidator userValidator;
+    private final TypeUserRepository typeUserRepository;
 
-    public UserServiceImpl(final UserRepository userRepository, final JWTUtils jwtUtils, final PBKDF2Encoder pbkdf2Encoder, final UserValidator userValidator) {
+    public UserServiceImpl(final UserRepository userRepository, final JWTUtils jwtUtils, final PBKDF2Encoder pbkdf2Encoder, final UserValidator userValidator, TypeUserRepository typeUserRepository) {
         super(jwtUtils);
         this.userRepository = userRepository;
         this.pbkdf2Encoder = pbkdf2Encoder;
         this.userValidator = userValidator;
+        this.typeUserRepository = typeUserRepository;
     }
 
     public Mono<ServerResponse> insert(final ServerRequest request) {
@@ -142,7 +148,22 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
     public Mono<ServerResponse> findAll(final ServerRequest request) {
         log.info("Init the find all user");
         try {
-            return ServerResponse.ok().body(this.userRepository.findAll(), UserEntity.class);
+            Flux<UserFullResponse> fulluser = this.userRepository.findAll().flatMap(result -> {
+                log.info("Init search type user for id");
+                log.info("User to search object : " + result.toString());
+                return this.typeUserRepository.findById(result.getTypeUserId()).flatMap(resp -> {
+                    log.info("Type user object : " + resp.toString());
+                    UserFullResponse userFullResponse = UserFullResponse.builder().build();
+                    BeanUtils.copyProperties(result, userFullResponse);
+                    TypeUserFullResponse typeUserFullResponse = TypeUserFullResponse.builder().build();
+                    BeanUtils.copyProperties(resp, typeUserFullResponse);
+                    userFullResponse.setTypeUser(typeUserFullResponse);
+                    log.info("Set type user in the user :" + userFullResponse.toString());
+                    return Mono.justOrEmpty(userFullResponse);
+                });
+            });
+            log.info("END the find all user");
+            return ServerResponse.ok().body(fulluser, UserFullResponse.class);
         } catch (Exception ex) {
             log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
@@ -162,6 +183,5 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
             return this.errorHandler(ex);
         }
     }
-
 
 }
