@@ -74,7 +74,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID extends String> implements
         return Mono.justOrEmpty(tokenHeader.equals(tokenRequest));
     }
 
-    protected Mono<String> obtainDataToken(ServerRequest request) throws Exception {
+    private Mono<String> obtainDataToken(ServerRequest request) throws Exception {
         String tokenHeader = request.headers().header(HttpHeaders.AUTHORIZATION).get(0);
         if (tokenHeader == null) {
             throw new Exception("El token de autorizacion es invalido");

@@ -60,10 +60,11 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
     }
 
     public Mono<ServerResponse> update(ServerRequest request) {
+        log.info("Init update type user");
         try {
             String id = request.pathVariable("id");
             this.typeUserValidator.validateId(id).toFuture().get();
-
+            log.info("The id for update : " + id);
             TypeUserEntity find = this.typeUserRepository.findById(id).toFuture().get();
             if (find == null)
                 return this.notFoundHandler("El tipo de usuario que se desea modificar no se encuentra");
@@ -102,6 +103,7 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
             if (find == null)
                 return this.notFoundHandler("El tipo de usuario que se desea eliminar no se encuentra.");
             log.info("Object the delete : " + find.toString());
+            log.info("End delete by id");
             return this.typeUserRepository.deleteById(id).map(result ->
                     this.okHandler("El registro fue eliminado con exito").toFuture().join()
             );
@@ -112,6 +114,19 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
         }
     }
 
+    public Mono<ServerResponse> deleteAll(ServerRequest request) {
+        try {
+            if (this.validateTokenRequest(request).toFuture().join()) {
+                return this.typeUserRepository.deleteAll().map(result ->
+                        this.okHandler("Todos los tipos de usuario han sido eliminados con exito").toFuture().join()
+                );
+            } else {
+                return ServerResponse.badRequest().build();
+            }
+        } catch (Exception ex) {
+            return this.errorHandler(ex);
+        }
+    }
     public Mono<ServerResponse> findAll(ServerRequest request) {
         try {
             return ServerResponse.ok().body(this.typeUserRepository.findAll(), TypeUserEntity.class);
@@ -135,4 +150,19 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
             return this.errorHandler(ex);
         }
     }
+
+    public Mono<ServerResponse> findByName(ServerRequest request) {
+        log.info("Init find By name");
+        try {
+            String name = request.pathVariable("name");
+            this.typeUserValidator.validateId(name).toFuture().join();
+            log.info("Search type user for name : " + name);
+            log.info("End Search by name");
+            return ServerResponse.ok().body(this.typeUserRepository.findByName(name), TypeUserEntity.class);
+        } catch (Exception ex) {
+            log.error("Error ex: " + ex.getMessage());
+            return this.errorHandler(ex);
+        }
+    }
+
 }

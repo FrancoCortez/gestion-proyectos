@@ -64,80 +64,104 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
     }
 
     public Mono<ServerResponse> update(final ServerRequest request) {
+        log.info("Init the update user");
         try {
             String id = request.pathVariable("id");
             this.userValidator.validateId(id).toFuture().join();
             UserEntity find = this.userRepository.findById(id).toFuture().get();
-            if (find == null)
+            if (find == null) {
+                log.info("El usuario " + id + " no existe");
                 return this.notFoundHandler("El usuario que se desea modificar no existe");
-
+            }
+            log.info("Entity end to search modify: " + find.toString());
             return request.bodyToMono(UserUpdateRequest.class).map((result) -> {
                 try {
                     this.userValidator.validateRequestUpdateUser(result);
                 } catch (Exception ex) {
                     return this.errorHandler(ex).toFuture().join();
                 }
+                log.info("Description request user : " + result.toString());
+                log.info("Update user Entity");
                 UserEntity entity = UserEntity.builder().build();
                 BeanUtils.copyProperties(result, entity);
                 entity.setEnabled(true);
                 entity.set_id(id);
                 try {
+                    log.info("Generate Auditing");
                     entity.setAuditing(this.generateAuditingEntity(find.getAuditing(), request).toFuture().get());
+                    log.info("Auditing create: " + entity.getAuditing().toString());
                 } catch (Exception ex) {
+                    log.error("Error the generate auditing : ex = " + ex.getMessage());
                     return this.errorHandler(ex).toFuture().join();
                 }
                 entity.setPassword(find.getPassword());
                 return ServerResponse.ok().body(this.userRepository.save(entity), UserEntity.class).toFuture().join();
             });
         } catch (Exception ex) {
+            log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
         }
     }
 
-    public Mono<ServerResponse> deleteById(ServerRequest request) {
+    public Mono<ServerResponse> deleteById(final ServerRequest request) {
+        log.info("Init the delete by id user");
         try {
             String id = request.pathVariable("id");
             UserEntity entity = this.userRepository.findById(id).toFuture().get();
-            if (entity == null)
+            if (entity == null) {
+                log.info("El usuario " + id + " no existe");
                 return this.notFoundHandler("El usuario que se desea modificar no existe");
+            }
+            log.info("Entity end to search modify: " + entity.toString());
             return this.userRepository.deleteById(id).map((result) ->
                     this.okHandler("El registro se a eliminado con exito").toFuture().join()
             );
         } catch (Exception ex) {
+            log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
         }
     }
 
-    public Mono<ServerResponse> deleteAll(ServerRequest request) {
+    public Mono<ServerResponse> deleteAll(final ServerRequest request) {
+        log.info("Init the delete all user");
         try {
             if (this.validateTokenRequest(request).toFuture().join()) {
                 return this.userRepository.deleteAll().map(result ->
                         this.okHandler("Todos los registros han sido eliminados con exito").toFuture().join()
                 );
             } else {
+                log.info("Token request is invalid with the auth token");
                 return ServerResponse.badRequest().build();
             }
         } catch (Exception ex) {
+            log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
         }
     }
 
-    public Mono<ServerResponse> findAll(ServerRequest request) {
+    public Mono<ServerResponse> findAll(final ServerRequest request) {
+        log.info("Init the find all user");
         try {
             return ServerResponse.ok().body(this.userRepository.findAll(), UserEntity.class);
         } catch (Exception ex) {
+            log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
         }
     }
 
 
-    public Mono<ServerResponse> findById(ServerRequest request) {
+    public Mono<ServerResponse> findById(final ServerRequest request) {
+        log.info("Init the find by id user");
         try {
             String id = request.pathVariable("id");
+            this.userValidator.validateId(id).toFuture().join();
+            log.info("User search the id : " + id);
             return ServerResponse.ok().body(this.userRepository.findById(id), UserEntity.class);
         } catch (Exception ex) {
+            log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
         }
     }
+
 
 }

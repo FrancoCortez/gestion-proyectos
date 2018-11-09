@@ -20,9 +20,11 @@ public class TypeUserRouter extends BaseRouter {
         return nest(path(baseRouterPath),
                 route(POST(""), typeUserService::insert)
                         .andRoute(PUT("/{id}"), typeUserService::update)
-                        .andRoute(GET(""), typeUserService::findAll)
                         .andRoute(DELETE("/{id}"), typeUserService::deleteById)
+                        .andRoute(DELETE("/{token}/delete-all"), typeUserService::deleteAll)
+                        .andRoute(GET(""), typeUserService::findAll)
                         .andRoute(GET("/{id}/find-by"), typeUserService::findById)
+                        .andRoute(GET("/{name}/find-name"), typeUserService::findByName)
         );
     }
 }
