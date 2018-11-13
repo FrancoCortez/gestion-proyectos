@@ -37,6 +37,45 @@ public class UserValidatorImpl extends BaseValidatorImpl implements UserValidato
                         .getFieldNameIfInvalid("El correo no puede ser null o estar vacio")
                         .orElse("")
         );
+        errors.append(
+                ValidationUtils.notNullObject
+                        .genericResult(request.getPersonalData())
+                        .getFieldNameIfInvalid("Los datos personales se encuentran nulos")
+                        .orElse("")
+        );
+
+        if (request.getPersonalData() != null) {
+            errors.append(
+                    ValidationUtils.notNullString
+                            .and(ValidationUtils.notEmptyString)
+                            .genericResult(request.getPersonalData().getAddress())
+                            .getFieldNameIfInvalid("La direccion de la persona no puede ser null o estar vacia")
+                            .orElse("")
+            );
+            errors.append(
+                    ValidationUtils.notNullString
+                            .and(ValidationUtils.notEmptyString)
+                            .genericResult(request.getPersonalData().getName())
+                            .getFieldNameIfInvalid("El nombre de la persona no puede ser null o estar vacia")
+                            .orElse("")
+            );
+            errors.append(
+                    ValidationUtils.notNullString
+                            .and(ValidationUtils.notEmptyString)
+                            .genericResult(request.getPersonalData().getLastName())
+                            .getFieldNameIfInvalid("El apellido del usuario no puede ser null o estar vacio")
+                            .orElse("")
+            );
+
+            errors.append(
+                    ValidationUtils.notNullString
+                            .and(ValidationUtils.notEmptyString)
+                            .genericResult(request.getPersonalData().getRut())
+                            .getFieldNameIfInvalid("El rut no puede ser null o estar vacio")
+                            .orElse("")
+            );
+        }
+
         log.info("End execution validation");
         if (!errors.toString().isEmpty()) {
             log.info("Error in the validation.");

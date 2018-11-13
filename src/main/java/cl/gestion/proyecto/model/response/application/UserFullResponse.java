@@ -23,5 +23,6 @@ public class UserFullResponse implements Serializable {
     @JsonIgnore
     private String typeUserId;
     private TypeUserFullResponse typeUser;
+    private PersonFullResponse personalData;
 
 }

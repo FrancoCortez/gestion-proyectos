@@ -1,8 +1,10 @@
 package cl.gestion.proyecto.service.logic.application.implement;
 
+import cl.gestion.proyecto.model.entities.application.PersonEntity;
 import cl.gestion.proyecto.model.entities.application.UserEntity;
 import cl.gestion.proyecto.model.request.application.UserRequest;
 import cl.gestion.proyecto.model.request.application.UserUpdateRequest;
+import cl.gestion.proyecto.model.response.application.PersonFullResponse;
 import cl.gestion.proyecto.model.response.application.UserFullResponse;
 import cl.gestion.proyecto.model.response.domain.TypeUserFullResponse;
 import cl.gestion.proyecto.repository.application.UserRepository;
@@ -60,7 +62,13 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
                     return errorHandler(ex);
                 }
                 entity.setPassword(this.pbkdf2Encoder.encode(entity.getPassword()));
-                log.info("End Execution");
+                log.info("Generate personal data");
+                PersonEntity personEntity = PersonEntity.builder().build();
+                BeanUtils.copyProperties(result.getPersonalData(), personEntity);
+                personEntity.setMail(entity.getMail());
+                entity.setPersonalData(personEntity);
+                log.info("End generate personal data : " + personEntity.toString());
+                log.info("Object for insert : " + entity.toString());
                 return ServerResponse.ok().body(this.userRepository.insert(entity), UserEntity.class);
             });
         } catch (Exception ex) {
@@ -101,6 +109,13 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
                     return this.errorHandler(ex);
                 }
                 entity.setPassword(find.getPassword());
+                log.info("Generate personal data");
+                PersonEntity personEntity = PersonEntity.builder().build();
+                BeanUtils.copyProperties(result.getPersonalData(), personEntity);
+                personEntity.setMail(entity.getMail());
+                entity.setPersonalData(personEntity);
+                log.info("End generate personal data : " + personEntity.toString());
+                log.info("Object for update : " + entity.toString());
                 return ServerResponse.ok().body(this.userRepository.save(entity), UserEntity.class);
             });
         } catch (Exception ex) {
@@ -117,6 +132,10 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
             if (entity == null) {
                 log.info("El usuario " + id + " no existe");
                 return this.notFoundHandler("El usuario que se desea modificar no existe");
+            }
+            if (!entity.getAuditing().getDelete()) {
+                log.info("El usuario " + id + " no tiene permitido su eliminacion");
+                return this.notFoundHandler("El usuario no permite su eliminacion.");
             }
             log.info("Entity end to search modify: " + entity.toString());
             return this.userRepository.deleteById(id).flatMap((result) ->
@@ -148,22 +167,13 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
     public Mono<ServerResponse> findAll(final ServerRequest request) {
         log.info("Init the find all user");
         try {
-            Flux<UserFullResponse> fulluser = this.userRepository.findAll().flatMap(result -> {
+            Flux<UserFullResponse> fullUser = this.userRepository.findAll().flatMap(result -> {
                 log.info("Init search type user for id");
                 log.info("User to search object : " + result.toString());
-                return this.typeUserRepository.findById(result.getTypeUserId()).flatMap(resp -> {
-                    log.info("Type user object : " + resp.toString());
-                    UserFullResponse userFullResponse = UserFullResponse.builder().build();
-                    BeanUtils.copyProperties(result, userFullResponse);
-                    TypeUserFullResponse typeUserFullResponse = TypeUserFullResponse.builder().build();
-                    BeanUtils.copyProperties(resp, typeUserFullResponse);
-                    userFullResponse.setTypeUser(typeUserFullResponse);
-                    log.info("Set type user in the user :" + userFullResponse.toString());
-                    return Mono.justOrEmpty(userFullResponse);
-                });
+                return createResponseUserResponse(result);
             });
             log.info("END the find all user");
-            return ServerResponse.ok().body(fulluser, UserFullResponse.class);
+            return ServerResponse.ok().body(fullUser, UserFullResponse.class);
         } catch (Exception ex) {
             log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
@@ -175,13 +185,38 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
         log.info("Init the find by id user");
         try {
             String id = request.pathVariable("id");
-            this.userValidator.validateId(id).toFuture().join();
-            log.info("User search the id : " + id);
-            return ServerResponse.ok().body(this.userRepository.findById(id), UserEntity.class);
+            this.userValidator.validateId(id).toFuture().get();
+            Mono<UserFullResponse> userFullResponseMono = this.userRepository.findById(id).flatMap(result -> {
+                log.info("Init search type user for id");
+                log.info("User to search object : " + result.toString());
+                return createResponseUserResponse(result);
+            });
+
+            return ServerResponse.ok().body(userFullResponseMono, UserFullResponse.class);
+
         } catch (Exception ex) {
             log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
         }
+    }
+
+
+    private Mono<UserFullResponse> createResponseUserResponse(UserEntity result) {
+        return this.typeUserRepository.findById(result.getTypeUserId()).flatMap(resp -> {
+            log.info("Type user object : " + resp.toString());
+            UserFullResponse userFullResponse = UserFullResponse.builder().build();
+            BeanUtils.copyProperties(result, userFullResponse);
+            if (result.getPersonalData() != null) {
+                PersonFullResponse personFullResponse = PersonFullResponse.builder().build();
+                BeanUtils.copyProperties(result.getPersonalData(), personFullResponse);
+                userFullResponse.setPersonalData(personFullResponse);
+            }
+            TypeUserFullResponse typeUserFullResponse = TypeUserFullResponse.builder().build();
+            BeanUtils.copyProperties(resp, typeUserFullResponse);
+            userFullResponse.setTypeUser(typeUserFullResponse);
+            log.info("Set type user in the user :" + userFullResponse.toString());
+            return Mono.justOrEmpty(userFullResponse);
+        });
     }
 
 }

@@ -28,6 +28,7 @@ public class UserEntity extends BaseEntity implements UserDetails {
     private Boolean enabled;
     private List<RoleEntity> roles;
     private String typeUserId;
+    private PersonEntity personalData;
 
 
     @Override

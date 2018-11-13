@@ -7,6 +7,7 @@ import java.util.Objects;
 
 public class ValidationUtils {
 
+    public static final BaseValidation<Object> notNullObject = GenericValidation.from(Objects::nonNull);
     public static final BaseValidation<String> notNullString = GenericValidation.from(Objects::nonNull);
     public static final BaseValidation<String> notEmptyString = GenericValidation.from(s -> !s.isEmpty());
     public static final BaseValidation<Integer> notNullInteger = GenericValidation.from(Objects::nonNull);
