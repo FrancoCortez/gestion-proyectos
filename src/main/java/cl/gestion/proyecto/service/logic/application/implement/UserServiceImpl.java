@@ -40,11 +40,11 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
     public Mono<ServerResponse> insert(final ServerRequest request) {
         log.info("Init the insert user");
         try {
-            return request.bodyToMono(UserRequest.class).map((result) -> {
+            return request.bodyToMono(UserRequest.class).flatMap((result) -> {
                 try {
                     this.userValidator.validateRequestUser(result);
                 } catch (Exception ex) {
-                    return this.errorHandler(ex).toFuture().join();
+                    return this.errorHandler(ex);
                 }
                 log.info("Description request user : " + result.toString());
                 log.info("Create user Entity");
@@ -57,11 +57,11 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
                     log.info("Auditing create: " + entity.getAuditing().toString());
                 } catch (Exception ex) {
                     log.error("Error the generate auditing : ex = " + ex.getMessage());
-                    return errorHandler(ex).toFuture().join();
+                    return errorHandler(ex);
                 }
                 entity.setPassword(this.pbkdf2Encoder.encode(entity.getPassword()));
                 log.info("End Execution");
-                return ServerResponse.ok().body(this.userRepository.insert(entity), UserEntity.class).toFuture().join();
+                return ServerResponse.ok().body(this.userRepository.insert(entity), UserEntity.class);
             });
         } catch (Exception ex) {
             log.error("Error the generate insert service : ex = " + ex.getMessage());
@@ -80,11 +80,11 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
                 return this.notFoundHandler("El usuario que se desea modificar no existe");
             }
             log.info("Entity end to search modify: " + find.toString());
-            return request.bodyToMono(UserUpdateRequest.class).map((result) -> {
+            return request.bodyToMono(UserUpdateRequest.class).flatMap((result) -> {
                 try {
                     this.userValidator.validateRequestUpdateUser(result);
                 } catch (Exception ex) {
-                    return this.errorHandler(ex).toFuture().join();
+                    return this.errorHandler(ex);
                 }
                 log.info("Description request user : " + result.toString());
                 log.info("Update user Entity");
@@ -98,10 +98,10 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
                     log.info("Auditing create: " + entity.getAuditing().toString());
                 } catch (Exception ex) {
                     log.error("Error the generate auditing : ex = " + ex.getMessage());
-                    return this.errorHandler(ex).toFuture().join();
+                    return this.errorHandler(ex);
                 }
                 entity.setPassword(find.getPassword());
-                return ServerResponse.ok().body(this.userRepository.save(entity), UserEntity.class).toFuture().join();
+                return ServerResponse.ok().body(this.userRepository.save(entity), UserEntity.class);
             });
         } catch (Exception ex) {
             log.error("Error ex: " + ex.getMessage());
@@ -119,8 +119,8 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
                 return this.notFoundHandler("El usuario que se desea modificar no existe");
             }
             log.info("Entity end to search modify: " + entity.toString());
-            return this.userRepository.deleteById(id).map((result) ->
-                    this.okHandler("El registro se a eliminado con exito").toFuture().join()
+            return this.userRepository.deleteById(id).flatMap((result) ->
+                    this.okHandler("El registro se a eliminado con exito")
             );
         } catch (Exception ex) {
             log.error("Error ex: " + ex.getMessage());
@@ -132,8 +132,8 @@ public class UserServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
         log.info("Init the delete all user");
         try {
             if (this.validateTokenRequest(request).toFuture().join()) {
-                return this.userRepository.deleteAll().map(result ->
-                        this.okHandler("Todos los registros han sido eliminados con exito").toFuture().join()
+                return this.userRepository.deleteAll().flatMap(result ->
+                        this.okHandler("Todos los registros han sido eliminados con exito")
                 );
             } else {
                 log.info("Token request is invalid with the auth token");

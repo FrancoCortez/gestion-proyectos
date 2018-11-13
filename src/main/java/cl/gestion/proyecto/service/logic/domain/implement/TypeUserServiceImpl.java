@@ -30,28 +30,30 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
     public Mono<ServerResponse> insert(ServerRequest request) {
         log.info("Init insert type user");
         try {
-            return request.bodyToMono(TypeUserRequest.class).map((result) -> {
+            return request.bodyToMono(TypeUserRequest.class).flatMap((result) -> {
                 try {
                     this.typeUserValidator.validateRequestTypeUser(result);
                 } catch (Exception ex) {
                     log.error("Error ex: " + ex.getMessage());
-                    return this.errorHandler(ex).toFuture().join();
+                    return this.errorHandler(ex);
                 }
                 log.info("Object request : " + result.toString());
                 TypeUserEntity entity = TypeUserEntity.builder().build();
                 BeanUtils.copyProperties(result, entity);
                 try {
                     log.info("Generate Auditing");
-                    entity.setAuditing(this.generateAuditingEntity(entity.getAuditing(), request).toFuture().get());
-                    log.info("Auditing create: " + entity.getAuditing().toString());
-
+                    return this.generateAuditingEntity(entity.getAuditing(), request).flatMap(auditing -> {
+                        entity.setAuditing(auditing);
+                        log.info("Auditing create: " + entity.getAuditing().toString());
+                        return this.typeUserRepository.insert(entity).flatMap(resp -> {
+                            log.info("Entity insert: " + entity.toString());
+                            return ServerResponse.ok().body(Mono.just(resp), TypeUserEntity.class);
+                        });
+                    });
                 } catch (Exception ex) {
                     log.error("Error ex: " + ex.getMessage());
-                    return errorHandler(ex).toFuture().join();
+                    return errorHandler(ex);
                 }
-                log.info("Object final to insert : " + entity.toString());
-                log.info("End Execution");
-                return ServerResponse.ok().body(this.typeUserRepository.insert(entity), TypeUserEntity.class).toFuture().join();
             });
         } catch (Exception ex) {
             log.error("Error ex: " + ex.getMessage());
@@ -63,30 +65,34 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
         log.info("Init update type user");
         try {
             String id = request.pathVariable("id");
-            this.typeUserValidator.validateId(id).toFuture().get();
+            this.typeUserValidator.validateId(id);
             log.info("The id for update : " + id);
-            TypeUserEntity find = this.typeUserRepository.findById(id).toFuture().get();
-            if (find == null)
-                return this.notFoundHandler("El tipo de usuario que se desea modificar no se encuentra");
-
-            return request.bodyToMono(TypeUserRequest.class).map(result -> {
-                try {
-                    this.typeUserValidator.validateRequestTypeUser(result);
-                } catch (Exception ex) {
-                    log.error("Error  ex: " + ex.getMessage());
-                    return this.errorHandler(ex).toFuture().join();
-                }
-                TypeUserEntity entity = TypeUserEntity.builder().build();
-                BeanUtils.copyProperties(result, entity);
-                entity.set_id(id);
-                try {
-                    entity.setAuditing(this.generateAuditingEntity(find.getAuditing(), request).toFuture().get());
-                } catch (Exception ex) {
-                    return this.errorHandler(ex).toFuture().join();
-                }
-                return ServerResponse.ok().body(this.typeUserRepository.save(entity), TypeUserEntity.class).toFuture().join();
-            });
-
+            return this.typeUserRepository.findById(id).flatMap(find -> {
+                log.info("Entre al primer return");
+                return request.bodyToMono(TypeUserRequest.class).flatMap(resp -> {
+                    log.info("Entre al segundo return");
+                    try {
+                        this.typeUserValidator.validateRequestTypeUser(resp);
+                    } catch (Exception ex) {
+                        return this.errorHandler(ex);
+                    }
+                    TypeUserEntity entity = TypeUserEntity.builder().build();
+                    BeanUtils.copyProperties(resp, entity);
+                    entity.set_id(id);
+                    try {
+                        return this.generateAuditingEntity(entity.getAuditing(), request).flatMap(auditingEntity -> {
+                            log.info("Entre al 3 return ");
+                            entity.setAuditing(auditingEntity);
+                            log.info("Entre al 4 return ");
+                            return this.typeUserRepository.save(entity).flatMap(response ->
+                                    ServerResponse.ok().body(Mono.justOrEmpty(response), TypeUserEntity.class)
+                            );
+                        });
+                    } catch (Exception ex) {
+                        return this.errorHandler(ex);
+                    }
+                });
+            }).onErrorResume(error -> this.errorHandler(error.getMessage()));
         } catch (Exception ex) {
             log.error("Error ex: " + ex.getMessage());
             return this.errorHandler(ex);
@@ -127,6 +133,7 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
             return this.errorHandler(ex);
         }
     }
+
     public Mono<ServerResponse> findAll(ServerRequest request) {
         try {
             return ServerResponse.ok().body(this.typeUserRepository.findAll(), TypeUserEntity.class);
