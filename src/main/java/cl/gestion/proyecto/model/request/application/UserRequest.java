@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @ToString
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 public class UserRequest implements Serializable {
     private String username;
     private String password;

@@ -65,7 +65,7 @@ public class TypeUserServiceImpl extends BaseServiceImpl<TypeUserEntity, String>
         log.info("Init update type user");
         try {
             String id = request.pathVariable("id");
-            this.typeUserValidator.validateId(id);
+            this.typeUserValidator.validateId(id).toFuture().get();
             log.info("The id for update : " + id);
             return this.typeUserRepository.findById(id).flatMap(find -> {
                 log.info("Entre al primer return");

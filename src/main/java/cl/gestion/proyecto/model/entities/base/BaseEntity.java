@@ -9,7 +9,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 public class BaseEntity implements Serializable {
 
     @Id

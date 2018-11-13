@@ -15,11 +15,11 @@ public class ValidationUtils {
     public static final BaseValidation<Object> objectNotNull = GenericValidation.from(Objects::nonNull);
 
     public static BaseValidation<String> stringMoreThan(int size) {
-        return GenericValidation.from(s -> ((String) s).length() > size);
+        return GenericValidation.from(s -> (s).length() > size);
     }
 
     public static BaseValidation<String> stringLessThan(int size) {
-        return GenericValidation.from(s -> ((String) s).length() < size);
+        return GenericValidation.from(s -> (s).length() < size);
     }
 
     public static BaseValidation<String> stringBetween(int morethan, int lessThan) {

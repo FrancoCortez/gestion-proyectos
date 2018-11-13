@@ -3,22 +3,22 @@ package cl.gestion.proyecto.service.validator.base;
 import java.util.Optional;
 
 public class GenericResult {
-    private boolean isValid;
+    private final boolean isValid;
 
 
-    public GenericResult(boolean isValid) {
+    private GenericResult(boolean isValid) {
         this.isValid = isValid;
     }
 
-    public static GenericResult ok() {
+    static GenericResult ok() {
         return new GenericResult(true);
     }
 
-    public static GenericResult fail() {
+    static GenericResult fail() {
         return new GenericResult(false);
     }
 
-    public boolean isValid() {
+    boolean isValid() {
         return isValid;
     }
 

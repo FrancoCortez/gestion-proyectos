@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Data
 @ToString
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 @Document(collection = "users")
 @Builder
 public class UserEntity extends BaseEntity implements UserDetails {

@@ -19,7 +19,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID extends String> implements
 
     private final JWTUtils jwtUtils;
 
-    public BaseServiceImpl(final JWTUtils jwtUtils) {
+    protected BaseServiceImpl(final JWTUtils jwtUtils) {
         this.jwtUtils = jwtUtils;
     }
 
@@ -96,14 +96,14 @@ public class BaseServiceImpl<T extends BaseEntity, ID extends String> implements
                     .createdBy(obtainDataToken(request).toFuture().get())
                     .createdDate(new Date())
                     .delete(true)
-                    .lastModfiedDate(new Date())
+                    .lastModifiedDate(new Date())
                     .lastModifiedBy(obtainDataToken(request).toFuture().get())
                     .version(1L)
                     .build());
         } else {
             log.info("Generate auditing the origin != null");
             auditingEntity.setLastModifiedBy(obtainDataToken(request).toFuture().get());
-            auditingEntity.setLastModfiedDate(new Date());
+            auditingEntity.setLastModifiedDate(new Date());
             auditingEntity.setVersion(auditingEntity.getVersion() + 1);
             return Mono.justOrEmpty(auditingEntity);
         }

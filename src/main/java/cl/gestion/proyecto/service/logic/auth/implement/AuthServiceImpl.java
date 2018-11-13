@@ -68,7 +68,7 @@ public class AuthServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
                         .createdBy("LEGACY")
                         .createdDate(new Date())
                         .delete(true)
-                        .lastModfiedDate(new Date())
+                        .lastModifiedDate(new Date())
                         .lastModifiedBy("LEGACY")
                         .version(1L)
                         .build());

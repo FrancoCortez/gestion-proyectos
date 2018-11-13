@@ -10,7 +10,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 @ToString
 public class AuditingEntity implements Serializable {
 
@@ -21,7 +21,7 @@ public class AuditingEntity implements Serializable {
     @LastModifiedBy
     private String lastModifiedBy;
     @LastModifiedDate
-    private Date lastModfiedDate;
+    private Date lastModifiedDate;
     @Version
     private Long version;
     private Boolean delete;

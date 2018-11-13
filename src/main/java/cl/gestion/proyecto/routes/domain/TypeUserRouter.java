@@ -13,7 +13,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 @Configuration
 public class TypeUserRouter extends BaseRouter {
-    private String baseRouterPath = this.baseRouter + "type-user";
+    private final String baseRouterPath = this.baseRouter + "type-user";
 
     @Bean(value = "type-user-router")
     public RouterFunction<ServerResponse> router(TypeUserService typeUserService) {

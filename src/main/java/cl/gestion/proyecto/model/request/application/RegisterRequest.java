@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Data
 @ToString
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 public class RegisterRequest implements Serializable {
     @NotNull
     @NotBlank

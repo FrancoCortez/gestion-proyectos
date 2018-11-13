@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 @ToString
 @Document(collection = "typeUser")
 public class TypeUserEntity extends BaseEntity {

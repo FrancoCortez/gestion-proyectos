@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @ToString
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 public class PersonEntity {
 
     @TextIndexed

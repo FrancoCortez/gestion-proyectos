@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Data
 @ToString
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 public class TypeUserFullResponse implements Serializable {
 
     private String _id;

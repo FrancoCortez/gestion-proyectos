@@ -1,5 +1,5 @@
 package cl.gestion.proyecto.routes.base;
 
 public class BaseRouter {
-    protected String baseRouter = "/api/rest/v1/";
+    protected final String baseRouter = "/api/rest/v1/";
 }

@@ -10,7 +10,7 @@ import java.util.Date;
 @Data
 @ToString
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 public class PersonFullResponse implements Serializable {
     private String rut;
     private String name;

@@ -14,7 +14,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @Configuration
 public class UserRoutes extends BaseRouter {
 
-    private String baseRouterPath = this.baseRouter + "user";
+    private final String baseRouterPath = this.baseRouter + "user";
 
     @Bean(value = "user-router")
     public RouterFunction<ServerResponse> router(UserService userService) {

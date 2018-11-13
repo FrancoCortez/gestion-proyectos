@@ -14,7 +14,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 @Configuration
 public class AuthRoutes extends BaseRouter {
-    private String baseRouterPath = this.baseRouter + "auth";
+    private final String baseRouterPath = this.baseRouter + "auth";
 
     @Bean(value = "auth-router")
     public RouterFunction<ServerResponse> router(AuthService authService) {

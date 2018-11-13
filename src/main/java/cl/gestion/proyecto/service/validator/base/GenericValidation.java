@@ -3,7 +3,7 @@ package cl.gestion.proyecto.service.validator.base;
 import java.util.function.Predicate;
 
 public class GenericValidation<K> implements BaseValidation<K> {
-    private Predicate<K> predicate;
+    private final Predicate<K> predicate;
 
     private GenericValidation(Predicate<K> predicate) {
         this.predicate = predicate;
