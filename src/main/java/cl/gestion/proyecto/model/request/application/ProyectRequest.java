@@ -1,9 +1,8 @@
-package cl.gestion.proyecto.model.entities.application;
+package cl.gestion.proyecto.model.request.application;
 
-import cl.gestion.proyecto.model.entities.base.BaseEntity;
 import lombok.*;
-import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
@@ -13,8 +12,8 @@ import java.util.Set;
 @ToString
 @Builder
 @EqualsAndHashCode(callSuper = false)
-@Document(collection = "proyect")
-public class ProyectEntity extends BaseEntity {
+public class ProyectRequest implements Serializable {
+
     private String name;
     private String description;
     private Date init;
@@ -23,4 +22,5 @@ public class ProyectEntity extends BaseEntity {
     private Set<String> comercialManager;
     private String proyectStateId;
     private String clientId;
+
 }

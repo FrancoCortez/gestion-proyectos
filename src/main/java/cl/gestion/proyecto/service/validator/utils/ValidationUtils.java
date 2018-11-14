@@ -4,6 +4,7 @@ import cl.gestion.proyecto.service.validator.base.BaseValidation;
 import cl.gestion.proyecto.service.validator.base.GenericValidation;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class ValidationUtils {
 
@@ -13,7 +14,8 @@ public class ValidationUtils {
     public static final BaseValidation<Integer> notNullInteger = GenericValidation.from(Objects::nonNull);
     public static final BaseValidation<Integer> greaterThanZero = GenericValidation.from(s -> s > 0);
     public static final BaseValidation<Object> objectNotNull = GenericValidation.from(Objects::nonNull);
-
+    public static final BaseValidation<Set<?>> notNullSetList = GenericValidation.from(Objects::nonNull);
+    public static final BaseValidation<Set<?>> notEmptySetList = GenericValidation.from(s -> !s.isEmpty());
     public static BaseValidation<String> stringMoreThan(int size) {
         return GenericValidation.from(s -> (s).length() > size);
     }
