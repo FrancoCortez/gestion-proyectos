@@ -12,7 +12,6 @@ import java.util.Date;
 @Builder
 @EqualsAndHashCode
 public class PersonEntity {
-
     @TextIndexed
     private String rut;
     private String name;
