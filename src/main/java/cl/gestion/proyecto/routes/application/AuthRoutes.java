@@ -1,7 +1,7 @@
 package cl.gestion.proyecto.routes.application;
 
+import cl.gestion.proyecto.handler.auth.implement.AuthHandlerImpl;
 import cl.gestion.proyecto.routes.base.BaseRouter;
-import cl.gestion.proyecto.service.logic.auth.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -17,7 +17,7 @@ public class AuthRoutes extends BaseRouter {
     private final String baseRouterPath = this.baseRouter + "auth";
 
     @Bean(value = "auth-router")
-    public RouterFunction<ServerResponse> router(AuthService authService) {
+    public RouterFunction<ServerResponse> router(AuthHandlerImpl authService) {
         return RouterFunctions.nest(path(baseRouterPath),
                 route(POST("/login"), authService::login)
                         .andRoute(POST("/register"), authService::register)

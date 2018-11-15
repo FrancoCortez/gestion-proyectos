@@ -8,9 +8,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @ToString
-public class ErrorHandlerResponse implements Serializable {
+public class ErrorHandlerResponse extends BaseResponse implements Serializable {
 
     private String msg;
     private Object trace;

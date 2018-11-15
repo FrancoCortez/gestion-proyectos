@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Builder
 @EqualsAndHashCode(callSuper = false)
 @ToString
-public class SuccessHandlerResponse extends BaseResponse implements Serializable {
+public class BaseResponse implements Serializable {
 
     private Object data;
 }

@@ -2,8 +2,10 @@ package cl.gestion.proyecto.service.logic.application.implement;
 
 import cl.gestion.proyecto.model.entities.application.ClientEntity;
 import cl.gestion.proyecto.model.entities.application.ProyectEntity;
+import cl.gestion.proyecto.model.entities.application.UserEntity;
 import cl.gestion.proyecto.model.entities.domain.ProyectStateEntity;
 import cl.gestion.proyecto.model.request.application.ProyectRequest;
+import cl.gestion.proyecto.model.response.application.ProyectFullResponse;
 import cl.gestion.proyecto.repository.application.ClientRepository;
 import cl.gestion.proyecto.repository.application.ProyectRepository;
 import cl.gestion.proyecto.repository.application.UserRepository;
@@ -17,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -99,7 +102,18 @@ public class ProyectServiceImpl extends BaseServiceImpl<ProyectEntity, String> i
     }
 
     public Mono<ServerResponse> findAll(ServerRequest request) {
-        return null;
+        log.info("Inicio del metodo buscar todos los proyectos.");
+        try {
+            Flux<ProyectFullResponse> response = this.proyectRepository.findAll().flatMap(findProyect -> {
+                log.info("Iniciar busqueda de dependencias del proyecto.");
+                return createResponseForProyect(findProyect);
+
+            });
+
+            return ServerResponse.ok().body(response, ProyectFullResponse.class);
+        } catch (Exception ex) {
+            return this.errorHandler(ex);
+        }
     }
 
     public Mono<ServerResponse> findById(ServerRequest request) {
@@ -108,5 +122,34 @@ public class ProyectServiceImpl extends BaseServiceImpl<ProyectEntity, String> i
 
     public Mono<ServerResponse> deleteAll(ServerRequest request) {
         return null;
+    }
+
+    private Flux<ProyectFullResponse> createResponseForProyect(ProyectEntity resp) {
+        return this.clientRepository.findById(resp.getClientId())
+                .defaultIfEmpty(ClientEntity.builder().build())
+                .flatMapMany(foundClient -> {
+                    log.info("Buscando clientes : " + foundClient.toString());
+                    return this.proyectStateRepository.findById(resp.getProyectStateId())
+                            .defaultIfEmpty(ProyectStateEntity.builder().build())
+                            .flatMapMany(foundState -> {
+                                log.info("Buscado estados del proyecto " + foundState.toString());
+                                return this.userRepository.findAllById(resp.getComercialManager())
+                                        .defaultIfEmpty(UserEntity.builder().build())
+                                        .flatMap(foundAllMG -> {
+                                            log.info("Buscando todos los usuarios MG del proyecto : " + foundAllMG.toString());
+                                            return this.userRepository.findAllById(resp.getProyectBoos())
+                                                    .defaultIfEmpty(UserEntity.builder().build())
+                                                    .flatMap(foundJP -> {
+                                                        log.info("Buscando a todos los usuarios JP del proyecto : " + foundJP.toString());
+                                                        return this.userRepository.findAllById(foundClient.getUserId())
+                                                                .defaultIfEmpty(UserEntity.builder().build())
+                                                                .flatMap(foundClientUser -> {
+                                                                    log.info("Buscando a todos los usuarios del cliente");
+                                                                    return Flux.just(ProyectFullResponse.builder().build());
+                                                                });
+                                                    });
+                                        });
+                            });
+                });
     }
 }

@@ -5,6 +5,8 @@ import cl.gestion.proyecto.model.entities.application.UserEntity;
 import cl.gestion.proyecto.model.entities.base.AuditingEntity;
 import cl.gestion.proyecto.model.request.application.LoginRequest;
 import cl.gestion.proyecto.model.request.application.RegisterRequest;
+import cl.gestion.proyecto.model.utils.BaseResponse;
+import cl.gestion.proyecto.model.utils.HandlerResponse;
 import cl.gestion.proyecto.repository.application.UserRepository;
 import cl.gestion.proyecto.service.logic.auth.AuthService;
 import cl.gestion.proyecto.service.logic.base.implement.BaseServiceImpl;
@@ -33,6 +35,61 @@ public class AuthServiceImpl extends BaseServiceImpl<UserEntity, String> impleme
         this.userRepository = userRepository;
         this.jwtUtils = jwtUtils;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public Mono<HandlerResponse<String>> login2(LoginRequest loginRequest) {
+        return this.userRepository.findByUsername(loginRequest.getUsername())
+                .flatMap(result -> {
+                    log.info("Validate login with password");
+                    log.info("user: " + result.toString());
+                    if (passwordEncoder.encode(loginRequest.getPassword()).equals(result.getPassword())) {
+                        log.info("Validation ok");
+                        HandlerResponse<String> handlerResponse = HandlerResponse.<String>builder()
+                                .status(200)
+                                .cla(String.class)
+                                .data(Mono.justOrEmpty(this.jwtUtils.generateToken(result)))
+                                .build();
+                        return Mono.justOrEmpty(handlerResponse);
+                    }
+                    log.info("Error en las credenciales");
+                    return Mono.justOrEmpty(HandlerResponse
+                            .<String>builder()
+                            .status(403)
+                            .cla(String.class)
+                            .data(Mono.justOrEmpty("No se encuentra autorizado. Credenciales invalidas."))
+                            .build());
+                });
+    }
+
+    public Mono<HandlerResponse<BaseResponse>> register2(RegisterRequest request) {
+        try {
+            UserEntity entity = UserEntity.builder().build();
+            BeanUtils.copyProperties(request, entity);
+            entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+            entity.setEnabled(true);
+            entity.setRoles(Collections.singletonList(RoleEntity.ROLE_USER));
+            entity.setAuditing(AuditingEntity.builder()
+                    .createdBy("LEGACY")
+                    .createdDate(new Date())
+                    .delete(true)
+                    .lastModifiedDate(new Date())
+                    .lastModifiedBy("LEGACY")
+                    .version(1L)
+                    .build());
+            return this.userRepository.insert(entity).flatMap(response -> {
+                return Mono.justOrEmpty(HandlerResponse.<BaseResponse>builder()
+                        .status(200)
+                        .data(Mono.just(BaseResponse.builder().data(entity).build()))
+                        .cla(BaseResponse.class)
+                        .build());
+            });
+        } catch (Exception ex) {
+            return Mono.justOrEmpty(HandlerResponse.<BaseResponse>builder()
+                    .status(400)
+                    .data(Mono.justOrEmpty(BaseResponse.builder().data(ex.getMessage()).build()))
+                    .cla(BaseResponse.class)
+                    .build());
+        }
     }
 
     public Mono<ServerResponse> login(ServerRequest request) {

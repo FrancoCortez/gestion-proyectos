@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @EqualsAndHashCode
 public class UserFullResponse implements Serializable {
-
+    private String _id;
     private String username;
     private String mail;
     private Boolean enabled;
